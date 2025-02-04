@@ -69,6 +69,7 @@ const Server = class Server {
   }
 
   routes() {
+    new routes.Albums(this.app, this.connect);
     new routes.Users(this.app, this.connect);
 
     this.app.use((req, res) => {
