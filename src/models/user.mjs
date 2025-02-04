@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const Schema = new mongoose.Schema({
+const userSchema = new mongoose.Schema({
   firstname: String,
   lastname: String,
   avatar: String,
@@ -21,4 +21,4 @@ const Schema = new mongoose.Schema({
   }
 });
 
-export default Schema;
+export default userSchema;
