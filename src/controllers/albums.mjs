@@ -8,10 +8,10 @@ const Albums = class Albums {
   }
 
   get() {
-    this.app.get('/album/', (req, res) => {
+    this.app.get('/album/:id', (req, res) => {
       try {
-        this.AlbumModel.find().then((albums) => {
-          res.status(200).json(albums || []);
+        this.AlbumModel.findById(req.params.id).then((album) => {
+          res.status(200).json(album || {});
         }).catch(() => {
           res.status(500).json({
             code: 500,
