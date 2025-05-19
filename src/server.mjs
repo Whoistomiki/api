@@ -16,6 +16,7 @@ const Server = class Server {
     this.config = config[process.argv[2]] || config.development;
   }
 
+  // Connexion à MongoDB
   async dbConnect() {
     try {
       const host = this.config.mongodb;
@@ -40,7 +41,6 @@ const Server = class Server {
           console.log('[ERROR] api dbConnect() -> mongodb error');
           this.connect = this.dbConnect(host);
         }, 5000);
-
         console.error(`[ERROR] api dbConnect() -> ${err}`);
       });
 
@@ -61,38 +61,50 @@ const Server = class Server {
     }
   }
 
+  // Sécurity : headers, cors, disable powered-by
+  security() {
+    this.app.use(helmet());
+    this.app.disable('x-powered-by');
+
+    const corsOptions = {
+      origin: ['http://localhost:3000'],
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      credentials: true
+    };
+    this.app.use(cors(corsOptions));
+  }
+
+  // Middlewares
   middleware() {
     this.app.use(compression());
-    this.app.use(cors());
     this.app.use(bodyParser.urlencoded({ extended: true }));
     this.app.use(bodyParser.json());
   }
 
+  // Routes
   routes() {
     new routes.Users(this.app, this.connect);
     new routes.Albums(this.app, this.connect);
     new routes.Photos(this.app, this.connect);
 
-    this.app.use((req, res) => {
-      res.status(404).json({
-        code: 404,
-        message: 'Not Found'
+    this.app.get('/', (req, res) => {
+      res.status(200).json({
+        code: 200,
+        message: 'Hello World!'
       });
     });
   }
 
-  security() {
-    this.app.use(helmet());
-    this.app.disable('x-powered-by');
-  }
-
+  // Lancement du serveur
   async run() {
     try {
       await this.dbConnect();
       this.security();
       this.middleware();
       this.routes();
-      this.app.listen(this.config.port);
+      this.app.listen(this.config.port, () => {
+        console.log(`[START] API lancée sur le port ${this.config.port}`);
+      });
     } catch (err) {
       console.error(`[ERROR] Server -> ${err}`);
     }
