@@ -8,19 +8,18 @@ const Users = class Users {
     this.run();
   }
 
-  deleteById() {
-    this.app.delete('/user/:id', (req, res) => {
+  create() {
+    this.app.post('/user/', (req, res) => {
       try {
-        this.UserModel.findByIdAndDelete(req.params.id).then((user) => {
+        const userModel = new this.UserModel(req.body);
+
+        userModel.save().then((user) => {
           res.status(200).json(user || {});
         }).catch(() => {
-          res.status(500).json({
-            code: 500,
-            message: 'Internal Server error'
-          });
+          res.status(200).json({});
         });
       } catch (err) {
-        console.error(`[ERROR] users/:id -> ${err}`);
+        console.error(`[ERROR] users/create -> ${err}`);
 
         res.status(400).json({
           code: 400,
@@ -52,18 +51,41 @@ const Users = class Users {
     });
   }
 
-  create() {
-    this.app.post('/user/', (req, res) => {
+  showEveryone() {
+    this.app.get('/user/', (req, res) => {
       try {
-        const userModel = new this.UserModel(req.body);
-
-        userModel.save().then((user) => {
-          res.status(200).json(user || {});
+        this.UserModel.find().then((users) => {
+          res.status(200).json(users || {});
         }).catch(() => {
-          res.status(200).json({});
+          res.status(500).json({
+            code: 500,
+            message: 'Internal Server error'
+          });
         });
       } catch (err) {
-        console.error(`[ERROR] users/create -> ${err}`);
+        console.error(`[ERROR] users/ -> ${err}`);
+
+        res.status(400).json({
+          code: 400,
+          message: 'Bad request'
+        });
+      }
+    });
+  }
+
+  deleteById() {
+    this.app.delete('/user/:id', (req, res) => {
+      try {
+        this.UserModel.findByIdAndDelete(req.params.id).then((user) => {
+          res.status(200).json(user || {});
+        }).catch(() => {
+          res.status(500).json({
+            code: 500,
+            message: 'Internal Server error'
+          });
+        });
+      } catch (err) {
+        console.error(`[ERROR] users/:id -> ${err}`);
 
         res.status(400).json({
           code: 400,
@@ -76,6 +98,7 @@ const Users = class Users {
   run() {
     this.create();
     this.showById();
+    this.showEveryone();
     this.deleteById();
   }
 };
