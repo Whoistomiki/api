@@ -1,11 +1,16 @@
 import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
-  firstname: String,
-  lastname: String,
-  avatar: String,
-  age: Number,
-  city: String
+  email: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  password: {
+    type: String,
+    required: true
+  }
+
 }, {
   collection: 'users',
   minimize: false,
@@ -14,9 +19,7 @@ const userSchema = new mongoose.Schema({
   transform: (doc, ret) => {
     const retUpdated = ret;
     retUpdated.id = ret._id;
-
     delete retUpdated._id;
-
     return retUpdated;
   }
 });

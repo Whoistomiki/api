@@ -1,3 +1,4 @@
+import authenticateToken from '../middlewares/auth.mjs';
 import PhotoModel from '../models/photo.mjs';
 import AlbumModel from '../models/album.mjs';
 
@@ -10,7 +11,7 @@ const Photos = class Photos {
   }
 
   create() {
-    this.app.post('/album/:idalbum/photo', (req, res) => {
+    this.app.post('/album/:idalbum/photo', authenticateToken, (req, res) => {
       try {
         const photoData = { ...req.body, album: req.params.idalbum };
         const photoModel = new this.PhotoModel(photoData);
@@ -35,7 +36,7 @@ const Photos = class Photos {
   }
 
   put() {
-    this.app.put('/album/:idalbum/photo/:idphotos', (req, res) => {
+    this.app.put('/album/:idalbum/photo/:idphotos', authenticateToken, (req, res) => {
       try {
         this.PhotoModel.findOneAndUpdate(
           { _id: req.params.idphotos, album: req.params.idalbum },
@@ -66,7 +67,7 @@ const Photos = class Photos {
   }
 
   getOnePhotoInTheAlbumId() {
-    this.app.get('/album/:idalbum/photos/:idphotos', (req, res) => {
+    this.app.get('/album/:idalbum/photos/:idphotos', authenticateToken, (req, res) => {
       try {
         this.PhotoModel.findOne({
           album: req.params.idalbum,
@@ -94,7 +95,7 @@ const Photos = class Photos {
   }
 
   getEveryPhotosInTheAlbumId() {
-    this.app.get('/album/:idalbum/photos', (req, res) => {
+    this.app.get('/album/:idalbum/photos', authenticateToken, (req, res) => {
       try {
         this.AlbumModel.findById(req.params.idalbum)
           .populate('photos')
@@ -119,7 +120,7 @@ const Photos = class Photos {
   }
 
   deleteById() {
-    this.app.delete('/album/:idalbum/photo/:idphotos', (req, res) => {
+    this.app.delete('/album/:idalbum/photo/:idphotos', authenticateToken, (req, res) => {
       try {
         this.PhotoModel.findOneAndDelete({
           _id: req.params.idphotos,

@@ -1,3 +1,4 @@
+import authenticateToken from '../middlewares/auth.mjs';
 import AlbumModel from '../models/album.mjs';
 
 const Albums = class Albums {
@@ -8,7 +9,7 @@ const Albums = class Albums {
   }
 
   create() {
-    this.app.post('/album/', (req, res) => {
+    this.app.post('/album/', authenticateToken, (req, res) => {
       try {
         const albumModel = new this.AlbumModel(req.body);
         albumModel.save().then((album) => {
@@ -28,7 +29,7 @@ const Albums = class Albums {
   }
 
   put() {
-    this.app.put('/album/:id', (req, res) => {
+    this.app.put('/album/:id', authenticateToken, (req, res) => {
       try {
         this.AlbumModel.findByIdAndUpdate(req.params.id, req.body, {
           new: true
@@ -52,7 +53,7 @@ const Albums = class Albums {
   }
 
   getOneAlbum() {
-    this.app.get('/album/:id', (req, res) => {
+    this.app.get('/album/:id', authenticateToken, (req, res) => {
       try {
         this.AlbumModel.findById(req.params.id).then((album) => {
           res.status(200).json(album || {});
@@ -74,7 +75,7 @@ const Albums = class Albums {
   }
 
   getEveryAlbums() {
-    this.app.get('/albums/', (req, res) => {
+    this.app.get('/albums/', authenticateToken, (req, res) => {
       try {
         this.AlbumModel.find().then((albums) => {
           res.status(200).json(albums || []);
@@ -96,7 +97,7 @@ const Albums = class Albums {
   }
 
   deleteById() {
-    this.app.delete('/album/:id', (req, res) => {
+    this.app.delete('/album/:id', authenticateToken, (req, res) => {
       try {
         this.AlbumModel.findByIdAndDelete(req.params.id).then((album) => {
           res.status(200).json(album || {});
