@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import Validator from 'better-validator';
 import bcrypt from 'bcrypt';
 import UserModel from '../models/user.mjs';
 
@@ -16,52 +17,65 @@ const Users = class Users {
     this.app.post('/user/', (req, res) => {
       const { email, password } = req.body;
 
-      if (!email || !password) {
-        return res.status(400).json({ message: 'Email et mot de passe requis' });
+      const validator = new Validator();
+      validator((v) => {
+        v('email', email).isEmail().required();
+        v('password', password).minLength(6).required();
+      });
+
+      const errors = validator.run();
+      if (errors.length > 0) {
+        return res.status(400).json({
+          code: 400,
+          message: 'Bad request',
+          errors
+        });
       }
 
-      this.UserModel.findOne({ email })
+      return this.UserModel.findOne({ email })
         .then((existingUser) => {
           if (existingUser) {
-            return res.status(409).json({ message: 'Utilisateur déjà existant' });
+            res.status(409).json({
+              code: 409,
+              message: 'User already exists'
+            });
+            return null;
           }
 
-          return bcrypt.hash(password, 10)
-            .then((hashedPassword) => {
-              const newUser = new this.UserModel({
-                email,
-                password: hashedPassword
-              });
+          return bcrypt.hash(password, 10);
+        })
+        .then((hashedPassword) => {
+          if (!hashedPassword) {
+            return null;
+          }
 
-              return newUser.save()
-                .then((user) => {
-                  res.status(201).json({
-                    user: {
-                      email: user.email,
-                      password: user.password
-                    }
-                  });
-                  return null;
-                })
-                .catch((err) => {
-                  console.error(`[ERROR] users/create -> save: ${err}`);
-                  res.status(500).json({ message: 'Erreur serveur lors de la création' });
-                  return null;
-                });
-            })
-            .catch((err) => {
-              console.error(`[ERROR] users/create -> hash: ${err}`);
-              res.status(500).json({ message: 'Erreur lors du hachage du mot de passe' });
-              return null;
-            });
+          const newUser = new this.UserModel({
+            email,
+            password: hashedPassword
+          });
+
+          return newUser.save();
+        })
+        .then((savedUser) => {
+          if (!savedUser) {
+            return null;
+          }
+
+          return res.status(201).json({
+            user: {
+              email: savedUser.email,
+              password: savedUser.password
+            }
+          });
         })
         .catch((err) => {
-          console.error(`[ERROR] users/create -> findOne: ${err}`);
-          res.status(500).json({ message: 'Erreur serveur lors de la recherche' });
-          return null;
-        });
+          console.error(`[ERROR] users/create -> ${err}`);
 
-      return null;
+          return res.status(500).json({
+            code: 500,
+            message: 'Internal Server error'
+          });
+        });
     });
   }
 
