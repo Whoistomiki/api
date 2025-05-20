@@ -9,6 +9,7 @@ import helmet from 'helmet';
 // Core
 import config from './config.mjs';
 import routes from './controllers/routes.mjs';
+import rateLimit from './middlewares/rateLimit.mjs';
 
 const Server = class Server {
   constructor() {
@@ -76,6 +77,7 @@ const Server = class Server {
 
   // Middlewares
   middleware() {
+    this.app.use(rateLimit);
     this.app.use(compression());
     this.app.use(bodyParser.urlencoded({ extended: true }));
     this.app.use(bodyParser.json());
