@@ -11,6 +11,7 @@ import config from './config.mjs';
 import routes from './controllers/routes.mjs';
 import rateLimit from './middlewares/rateLimit.mjs';
 import Pipeline from './controllers/pipeline.mjs';
+import RandomUserController from './controllers/randomUsers.mjs';
 
 const Server = class Server {
   constructor() {
@@ -89,7 +90,7 @@ const Server = class Server {
     new routes.Users(this.app, this.connect);
     new routes.Albums(this.app, this.connect);
     new routes.Photos(this.app, this.connect);
-
+    new RandomUserController(this.app);
     new Pipeline(this.app);
 
     this.app.get('/', (req, res) => {
